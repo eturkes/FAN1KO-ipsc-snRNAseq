@@ -1,0 +1,10 @@
+cache
+data
+.git
+R
+results
+storage
+COPYING
+docker-compose.yml
+.gitignore
+README.md
