@@ -42,13 +42,15 @@ RUN apt-get update \
         -e "install.packages('xfun')" \
         -e "install.packages('yaml')" \
         -e "install.packages('conflicted')" \
-        -e "install.packages('Seurat')" \
         -e "install.packages('DT')" \
         -e "install.packages('viridis')" \
         -e "install.packages('BiocManager')" \
+        -e "install.packages('remotes')" \
         -e "BiocManager::install('SingleCellExperiment')" \
         -e "BiocManager::install('scuttle')" \
         -e "BiocManager::install('DropletUtils')" \
+        -e "BiocManager::install('glmGamPoi')" \
+        -e "remotes::install_github('satijalab/seurat', ref = 'develop')" \
     && apt-get clean \
     && rm -Rf \
         /var/lib/apt/lists/ \
