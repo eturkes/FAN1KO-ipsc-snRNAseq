@@ -1,10 +1,15 @@
 cache
 data
 .git
+notes
 R
 results
+.Rproj.user
 storage
 COPYING
 docker-compose.yml
+.env
+FAN1KO-ipsc-snRNAseq.Rproj
 .gitignore
 README.md
+singularity.sh
