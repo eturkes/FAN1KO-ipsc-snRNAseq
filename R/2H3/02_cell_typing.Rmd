@@ -138,7 +138,7 @@ tran_markers_highvar <- lapply(tran_markers, function(x) x[!(x %in% remove)])
 
 for (i in seq_along(tran_markers_highvar)) {
   if (any(tran_markers_highvar[[i]] %in% rownames(seurat))) {
-    print( # Only plot first 4 genes.
+    print( # Only plot first four genes.
       FeaturePlot(seurat, tran_markers_highvar[[i]][1:4], order = TRUE, cols = c("lightgrey", "red")) +
         plot_annotation(
           names(tran_markers_highvar)[i],
