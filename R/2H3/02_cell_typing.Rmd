@@ -66,6 +66,8 @@ packages <- c("conflicted", "Seurat", "dplyr", "ggrepel", "ggplot2", "GSVA", "pa
 invisible(suppressPackageStartupMessages(lapply(packages, library, character.only = TRUE)))
 source(file.path("..", "utils.R"))
 
+`%notin%` <- Negate(`%in%`)
+
 analysis_no <- 2
 data_name <- unlist(strsplit(getwd(), "/"))[6] # Name of dataset.
 data_dir <- file.path("..", "..", "data") # Backed up data.
@@ -109,12 +111,16 @@ smith_markers[[5]] <- c("MEIS2", "PPP1R1A", "CAMKV", "RAC3", "GRIN2B")
 smith_markers[[6]] <- c("CCND1", "HOMER3", "EBF1")
 smith_markers[[7]] <- c("VGF", "H1F0")
 
-for (i in seq_along(smith_markers)) {
-  if (any(smith_markers[[i]] %in% rownames(seurat))) {
+remove <- unique(unlist(smith_markers))[unique(unlist(smith_markers)) %notin% VariableFeatures(seurat)]
+smith_markers_highvar <- lapply(smith_markers, function(x) x[!(x %in% remove)])
+
+for (i in seq_along(smith_markers_highvar)) {
+  if (any(smith_markers_highvar[[i]] %in% rownames(seurat))) {
     print(
-      FeaturePlot(seurat, smith_markers[[i]], order = TRUE, cols = c("lightgrey", "red")) +
+      FeaturePlot(seurat, smith_markers_highvar[[i]], order = TRUE, cols = c("lightgrey", "red")) +
         plot_annotation(
-          names(smith_markers)[i], theme = theme(plot.title = element_text(hjust = 0.5, size = 18, face = "bold"))
+          names(smith_markers_highvar)[i],
+          theme = theme(plot.title = element_text(hjust = 0.5, size = 18, face = "bold"))
         )
     )
   }
@@ -127,12 +133,16 @@ for (i in seq_along(smith_markers)) {
 tran_markers <- read.delim(file.path(data_dir, "gene-sets", "tran_markers.tsv"))
 tran_markers <- as.list(tran_markers)
 
-for (i in seq_along(tran_markers)) {
-  if (any(tran_markers[[i]] %in% rownames(seurat))) {
+remove <- unique(unlist(tran_markers))[unique(unlist(tran_markers)) %notin% VariableFeatures(seurat)]
+tran_markers_highvar <- lapply(tran_markers, function(x) x[!(x %in% remove)])
+
+for (i in seq_along(tran_markers_highvar)) {
+  if (any(tran_markers_highvar[[i]] %in% rownames(seurat))) {
     print( # Only plot first 4 genes.
-      FeaturePlot(seurat, tran_markers[[i]][1:4], order = TRUE, cols = c("lightgrey", "red")) +
+      FeaturePlot(seurat, tran_markers_highvar[[i]][1:4], order = TRUE, cols = c("lightgrey", "red")) +
         plot_annotation(
-          names(tran_markers)[i], theme = theme(plot.title = element_text(hjust = 0.5, size = 18, face = "bold"))
+          names(tran_markers_highvar)[i],
+          theme = theme(plot.title = element_text(hjust = 0.5, size = 18, face = "bold"))
         )
     )
   }
@@ -144,11 +154,13 @@ for (i in seq_along(tran_markers)) {
 ## Smith-Geater
 
 ```{r}
-rds <- file.path(cache_dir, "smith_gsva.rds")
+rds <- file.path(cache_dir, "smith_gsva_highvar.rds")
 if (file.exists(rds)) {
   gsva <- readRDS(rds)
 } else {
-  gsva <- gsva(as.matrix(GetAssayData(seurat)), smith_markers, method = "ssgsea", ssgsea.norm = FALSE, verbose = FALSE)
+  gsva <- gsva(
+    as.matrix(GetAssayData(seurat)), smith_markers_highvar, method = "ssgsea", ssgsea.norm = FALSE, verbose = FALSE
+  )
   saveRDS(gsva, rds)
 }
 gsva <- (2 * (gsva - min(gsva)) / (max(gsva) - min(gsva))) - 1
@@ -178,11 +190,13 @@ DefaultAssay(seurat) <- "SCT"
 ## Tran
 
 ```{r}
-rds <- file.path(cache_dir, "tran_gsva.rds")
+rds <- file.path(cache_dir, "tran_gsva_highvar.rds")
 if (file.exists(rds)) {
   gsva <- readRDS(rds)
 } else {
-  gsva <- gsva(as.matrix(GetAssayData(seurat)), tran_markers, method = "ssgsea", ssgsea.norm = FALSE, verbose = FALSE)
+  gsva <- gsva(
+    as.matrix(GetAssayData(seurat)), tran_markers_highvar, method = "ssgsea", ssgsea.norm = FALSE, verbose = FALSE
+  )
   saveRDS(gsva, rds)
 }
 gsva <- (2 * (gsva - min(gsva)) / (max(gsva) - min(gsva))) - 1
