@@ -62,7 +62,7 @@ The data here will be referenced using the name ``r unlist(strsplit(getwd(), "/"
 #
 #    Emir Turkes can be contacted at emir.turkes@eturkes.com
 
-packages <- c("conflicted", "Seurat", "dplyr", "ggrepel", "ggplot2", "GSVA")
+packages <- c("conflicted", "Seurat", "dplyr", "ggrepel", "ggplot2", "GSVA", "patchwork")
 invisible(suppressPackageStartupMessages(lapply(packages, library, character.only = TRUE)))
 source(file.path("..", "utils.R"))
 
@@ -110,8 +110,14 @@ smith_markers[[6]] <- c("CCND1", "HOMER3", "EBF1")
 smith_markers[[7]] <- c("VGF", "H1F0")
 
 for (i in seq_along(smith_markers)) {
-  print(names(smith_markers)[i])
-  print(gene_plot(list(seurat = seurat), "seurat", smith_markers[[i]]))
+  if (any(smith_markers[[i]] %in% rownames(seurat))) {
+    print(
+      FeaturePlot(seurat, smith_markers[[i]], order = TRUE, cols = c("lightgrey", "red")) +
+        plot_annotation(
+          names(smith_markers)[i], theme = theme(plot.title = element_text(hjust = 0.5, size = 18, face = "bold"))
+        )
+    )
+  }
 }
 ```
 
@@ -122,8 +128,14 @@ tran_markers <- read.delim(file.path(data_dir, "gene-sets", "tran_markers.tsv"))
 tran_markers <- as.list(tran_markers)
 
 for (i in seq_along(tran_markers)) {
-  print(names(tran_markers)[i])
-  print(gene_plot(list(seurat = seurat), "seurat", tran_markers[[i]][1:4])) # Just look at top 4 markers.
+  if (any(tran_markers[[i]] %in% rownames(seurat))) {
+    print( # Only plot first 4 genes.
+      FeaturePlot(seurat, tran_markers[[i]][1:4], order = TRUE, cols = c("lightgrey", "red")) +
+        plot_annotation(
+          names(tran_markers)[i], theme = theme(plot.title = element_text(hjust = 0.5, size = 18, face = "bold"))
+        )
+    )
+  }
 }
 ```
 
@@ -146,6 +158,7 @@ seurat[["GSVA"]] <- gsva_seurat
 DefaultAssay(seurat) <- "GSVA"
 
 # Loop through gene sets, plotting them four at a time.
+# -----------------------------------------------------
 idx_start <- 0
 idx_end <- 0
 for (i in seq(ceiling(nrow(seurat) / 4))) { # Find number of rounds needed to loop through all gene sets.
@@ -155,8 +168,9 @@ for (i in seq(ceiling(nrow(seurat) / 4))) { # Find number of rounds needed to lo
   } else {
     idx_end <- idx_start + 3
   }
-  print(gene_plot(list(seurat = seurat), "seurat", rownames(seurat)[idx_start:idx_end]))
+  print(FeaturePlot(seurat, rownames(seurat)[idx_start:idx_end], order = TRUE, cols = c("lightgrey", "red")))
 }
+# -----------------------------------------------------
 
 DefaultAssay(seurat) <- "SCT"
 ```
@@ -178,6 +192,7 @@ seurat[["GSVA"]] <- gsva_seurat
 DefaultAssay(seurat) <- "GSVA"
 
 # Loop through gene sets, plotting them four at a time.
+# -----------------------------------------------------
 idx_start <- 0
 idx_end <- 0
 for (i in seq(ceiling(nrow(seurat) / 4))) { # Find number of rounds needed to loop through all gene sets.
@@ -187,8 +202,9 @@ for (i in seq(ceiling(nrow(seurat) / 4))) { # Find number of rounds needed to lo
   } else {
     idx_end <- idx_start + 3
   }
-  print(gene_plot(list(seurat = seurat), "seurat", rownames(seurat)[idx_start:idx_end]))
+  print(FeaturePlot(seurat, rownames(seurat)[idx_start:idx_end], order = TRUE, cols = c("lightgrey", "red")))
 }
+# -----------------------------------------------------
 
 DefaultAssay(seurat) <- "SCT"
 ```
