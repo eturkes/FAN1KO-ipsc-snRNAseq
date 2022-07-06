@@ -62,7 +62,7 @@ The data here will be referenced using the name ``r unlist(strsplit(getwd(), "/"
 #
 #    Emir Turkes can be contacted at emir.turkes@eturkes.com
 
-packages <- c("conflicted", "Seurat", "dplyr", "ggrepel", "ggplot2")
+packages <- c("conflicted", "Seurat", "dplyr", "ggrepel", "ggplot2", "GSVA")
 invisible(suppressPackageStartupMessages(lapply(packages, library, character.only = TRUE)))
 source(file.path("..", "utils.R"))
 
@@ -91,7 +91,9 @@ seurat
 red_dim_plot(seurat, "umap1", "umap2", "seurat_clusters", "cat")
 ```
 
-# Smith-Geater Markers
+# Individual Marker Genes
+
+## Smith-Geater
 
 ```{r}
 smith_markers <- vector("list", length = 7)
@@ -113,16 +115,82 @@ for (i in seq_along(smith_markers)) {
 }
 ```
 
-# Tran Markers
+## Tran
 
 ```{r}
 tran_markers <- read.delim(file.path(data_dir, "gene-sets", "tran_markers.tsv"))
-tran_markers <- tran_markers[1:4, ] # Just look at top 4 markers.
+tran_markers <- as.list(tran_markers)
 
-for (i in seq(ncol(tran_markers))) {
-  print(colnames(tran_markers)[i])
-  print(gene_plot(list(seurat = seurat), "seurat", tran_markers[ , i]))
+for (i in seq_along(tran_markers)) {
+  print(names(tran_markers)[i])
+  print(gene_plot(list(seurat = seurat), "seurat", tran_markers[[i]][1:4])) # Just look at top 4 markers.
 }
+```
+
+# Gene Sets
+
+## Smith-Geater
+
+```{r}
+rds <- file.path(cache_dir, "smith_gsva.rds")
+if (file.exists(rds)) {
+  gsva <- readRDS(rds)
+} else {
+  gsva <- gsva(as.matrix(GetAssayData(seurat)), smith_markers, method = "ssgsea", ssgsea.norm = FALSE, verbose = FALSE)
+  saveRDS(gsva, rds)
+}
+gsva <- (2 * (gsva - min(gsva)) / (max(gsva) - min(gsva))) - 1
+
+gsva_seurat <- CreateAssayObject(data = gsva)
+seurat[["GSVA"]] <- gsva_seurat
+DefaultAssay(seurat) <- "GSVA"
+
+# Loop through gene sets, plotting them four at a time.
+idx_start <- 0
+idx_end <- 0
+for (i in seq(ceiling(nrow(seurat) / 4))) { # Find number of rounds needed to loop through all gene sets.
+  idx_start <- idx_end + 1
+  if (i == nrow(seurat)) { # Special case for the last round.
+    idx_end <- idx_start + (nrow(seurat) - idx_start)
+  } else {
+    idx_end <- idx_start + 3
+  }
+  print(gene_plot(list(seurat = seurat), "seurat", rownames(seurat)[idx_start:idx_end]))
+}
+
+DefaultAssay(seurat) <- "SCT"
+```
+
+## Tran
+
+```{r}
+rds <- file.path(cache_dir, "tran_gsva.rds")
+if (file.exists(rds)) {
+  gsva <- readRDS(rds)
+} else {
+  gsva <- gsva(as.matrix(GetAssayData(seurat)), tran_markers, method = "ssgsea", ssgsea.norm = FALSE, verbose = FALSE)
+  saveRDS(gsva, rds)
+}
+gsva <- (2 * (gsva - min(gsva)) / (max(gsva) - min(gsva))) - 1
+
+gsva_seurat <- CreateAssayObject(data = gsva)
+seurat[["GSVA"]] <- gsva_seurat
+DefaultAssay(seurat) <- "GSVA"
+
+# Loop through gene sets, plotting them four at a time.
+idx_start <- 0
+idx_end <- 0
+for (i in seq(ceiling(nrow(seurat) / 4))) { # Find number of rounds needed to loop through all gene sets.
+  idx_start <- idx_end + 1
+  if (i == nrow(seurat)) { # Special case for the last round.
+    idx_end <- idx_start + (nrow(seurat) - idx_start)
+  } else {
+    idx_end <- idx_start + 3
+  }
+  print(gene_plot(list(seurat = seurat), "seurat", rownames(seurat)[idx_start:idx_end]))
+}
+
+DefaultAssay(seurat) <- "SCT"
 ```
 
 # References

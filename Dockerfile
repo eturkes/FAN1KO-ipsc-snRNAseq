@@ -50,6 +50,7 @@ RUN apt-get update \
         -e "BiocManager::install('scuttle')" \
         -e "BiocManager::install('DropletUtils')" \
         -e "BiocManager::install('glmGamPoi')" \
+        -e "BiocManager::install('GSVA')" \
         -e "remotes::install_github('satijalab/seurat', ref = 'develop')" \
     && apt-get clean \
     && rm -Rf \
