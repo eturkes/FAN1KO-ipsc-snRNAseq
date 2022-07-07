@@ -169,20 +169,12 @@ gsva_seurat <- CreateAssayObject(data = gsva)
 seurat[["GSVA"]] <- gsva_seurat
 DefaultAssay(seurat) <- "GSVA"
 
-# Loop through gene sets, plotting them four at a time.
-# -----------------------------------------------------
-idx_start <- 0
-idx_end <- 0
-for (i in seq(ceiling(nrow(seurat) / 4))) { # Find number of rounds needed to loop through all gene sets.
-  idx_start <- idx_end + 1
-  if (i == nrow(seurat)) { # Special case for the last round.
-    idx_end <- idx_start + (nrow(seurat) - idx_start)
-  } else {
-    idx_end <- idx_start + 3
-  }
-  print(FeaturePlot(seurat, rownames(seurat)[idx_start:idx_end], order = TRUE, cols = c("lightgrey", "red")))
+for (i in seq(nrow(seurat))) {
+  print(
+    FeaturePlot(seurat, rownames(seurat)[i], order = TRUE) +
+      scale_color_gradientn(colors = c("blue", "#F8F8F8", "red"),  limits = c(-1, 1))
+  )
 }
-# -----------------------------------------------------
 
 DefaultAssay(seurat) <- "SCT"
 ```
@@ -205,20 +197,12 @@ gsva_seurat <- CreateAssayObject(data = gsva)
 seurat[["GSVA"]] <- gsva_seurat
 DefaultAssay(seurat) <- "GSVA"
 
-# Loop through gene sets, plotting them four at a time.
-# -----------------------------------------------------
-idx_start <- 0
-idx_end <- 0
-for (i in seq(ceiling(nrow(seurat) / 4))) { # Find number of rounds needed to loop through all gene sets.
-  idx_start <- idx_end + 1
-  if (i == nrow(seurat)) { # Special case for the last round.
-    idx_end <- idx_start + (nrow(seurat) - idx_start)
-  } else {
-    idx_end <- idx_start + 3
-  }
-  print(FeaturePlot(seurat, rownames(seurat)[idx_start:idx_end], order = TRUE, cols = c("lightgrey", "red")))
+for (i in seq(nrow(seurat))) {
+  print(
+    FeaturePlot(seurat, rownames(seurat)[i], order = TRUE) +
+      scale_color_gradientn(colors = c("blue", "#F8F8F8", "red"),  limits = c(-1, 1))
+  )
 }
-# -----------------------------------------------------
 
 DefaultAssay(seurat) <- "SCT"
 ```
