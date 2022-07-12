@@ -255,28 +255,6 @@ seurat$tran_singleR <- factor(predictions$labels)
 red_dim_plot(seurat, "umap1", "umap2", "tran_singleR", "cat")
 ```
 
-### Assigning Seurat Clusters
-
-```{r}
-rds <- file.path(cache_dir, "tran_singleR_clusters.rds")
-if (file.exists(rds)) {
-  predictions <- readRDS(rds)
-} else {
-  predictions <- SingleR(
-    GetAssayData(seurat, assay = "RNA"), ref, ref$cellType,
-    clusters = seurat$seurat_clusters, BPPARAM = MulticoreParam(detectCores())
-  )
-  saveRDS(predictions, rds)
-}
-
-table(predictions$labels)
-
-names(predictions$labels) <- levels(seurat)
-seurat <- RenameIdents(seurat, predictions$labels)
-seurat$tran_singleR_clusters <- seurat@active.ident
-red_dim_plot(seurat, "umap1", "umap2", "tran_singleR_clusters", "cat")
-```
-
 ### Merged Cell Types
 
 ```{r}
@@ -297,29 +275,6 @@ table(predictions$labels)
 
 seurat$tran_singleR_merged <- factor(predictions$labels)
 red_dim_plot(seurat, "umap1", "umap2", "tran_singleR_merged", "cat")
-```
-
-### Merged w/ Seurat Cluster Assignment
-
-```{r}
-rds <- file.path(cache_dir, "tran_singleR_merged_clusters.rds")
-if (file.exists(rds)) {
-  predictions <- readRDS(rds)
-} else {
-  predictions <- SingleR(
-    GetAssayData(seurat, assay = "RNA"), ref, ref$cellType_merged,
-    clusters = seurat$seurat_clusters, BPPARAM = MulticoreParam(detectCores())
-  )
-  saveRDS(predictions, rds)
-}
-
-table(predictions$labels)
-
-seurat@active.ident <- seurat$seurat_clusters
-names(predictions$labels) <- levels(seurat)
-seurat <- RenameIdents(seurat, predictions$labels)
-seurat$tran_singleR_merged_clusters <- seurat@active.ident
-red_dim_plot(seurat, "umap1", "umap2", "tran_singleR_merged_clusters", "cat")
 ```
 
 # References
