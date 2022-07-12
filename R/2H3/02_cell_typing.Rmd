@@ -151,6 +151,50 @@ for (i in seq_along(tran_markers_highvar)) {
 }
 ```
 
+## Bhaduri
+
+```{r}
+bhaduri_markers <- read.delim(file.path(data_dir, "gene-sets", "curated-development-genes.tsv"), check.names = FALSE)
+
+bhaduri_markers <- bhaduri_markers[ , 1:which(colnames(bhaduri_markers) == "Polioudakis Neuron 2019")]
+bhaduri_markers <- bhaduri_markers[ , -(which(colnames(bhaduri_markers) == "oRG vRG shared genes"))]
+bhaduri_markers <- Filter(function(x) !all(is.na(x)), bhaduri_markers)
+bhaduri_markers <- as.list(bhaduri_markers)
+bhaduri_markers <- lapply(bhaduri_markers, function(x) x[!(x == "")])
+
+remove <- c(
+  "SORCS1", "ADRA2A", "SLA", "STMN2", "SORBS2", "ELAVL2", "DCX", "ZFHX4", "GLI3", "CD99", "IGFBP7",
+  "AURKC", "HMGB1", "HMGB3", "CTNNB1", "HES1", "VIM", "PTN", "CLU", "IL33", "NPR3", "CCNB2",
+  "KIF15", "ARHGAP11B", "CENPK", "NEUROD2", "NEUROD6", "DLX2", "ERBB4", "SOX5", "BCL11B"
+)
+bhaduri_markers <- bhaduri_markers
+for (i in seq_along(remove)) {
+  bhaduri_markers <- rapply(bhaduri_markers, function(x) ifelse(x == remove[i], "", x), how = "replace")
+}
+bhaduri_markers <- lapply(bhaduri_markers, function(x) x[!(x == "")])
+remove <- which(
+  names(bhaduri_markers) %in% c(
+    "Radial Glia_vRG", "Radial Glia_tRG", "Microglia", "oRG specific genes", "vRG specific genes"
+  )
+)
+bhaduri_markers <- bhaduri_markers[-remove]
+
+remove <- unique(unlist(bhaduri_markers))[unique(unlist(bhaduri_markers)) %notin% VariableFeatures(seurat)]
+bhaduri_markers_highvar <- lapply(bhaduri_markers, function(x) x[!(x %in% remove)])
+
+for (i in seq_along(bhaduri_markers)) {
+  if (any(bhaduri_markers[[i]] %in% rownames(seurat))) {
+    print(
+      FeaturePlot(seurat, bhaduri_markers[[i]], order = TRUE, cols = c("lightgrey", "red")) +
+        plot_annotation(
+          names(bhaduri_markers)[i],
+          theme = theme(plot.title = element_text(hjust = 0.5, size = 18, face = "bold"))
+        )
+    )
+  }
+}
+```
+
 ## Tran Figure S4 Markers
 
 ```{r}
