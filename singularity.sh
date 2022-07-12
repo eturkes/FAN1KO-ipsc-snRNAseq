@@ -27,7 +27,7 @@
 # For more details: https://divingintogeneticsandgenomics.rbind.io/post/run-rstudio-server-with-singularity-on-hpc/
 # Be sure to check images and paths
 
-singularity pull fan1ko-ipsc-snrnaseq.simg docker://eturkes/fan1ko-ipsc-snrnaseq:R4.2.1v2
+singularity pull fan1ko-ipsc-snrnaseq.simg docker://eturkes/fan1ko-ipsc-snrnaseq:R4.2.1v3
 
 if [ "$1" = "all" ]; then
     singularity exec \
