@@ -269,56 +269,95 @@ DefaultAssay(seurat) <- "SCT"
 ## Tran
 
 ```{r}
-load(file.path(data_dir, "tran", "SCE_NAc-n8_tran-etal.rda"))
-ref <- sce.nac.tran
-rm(sce.nac.tran)
+ref <- vector("list", length = 5)
 
-unique(ref$cellType)
-remove <- grep("drop", ref$cellType)
-ref <- ref[ , -remove]
-ref$cellType <- factor(ref$cellType)
-unique(ref$cellType)
+load(file.path(data_dir, "tran", "SCE_AMY-n5_tran-etal.rda"))
+ref[[1]] <- sce.amy.tran
+rm(sce.amy.tran)
+unique(ref[[1]]$cellType)
+remove <- grep("drop", ref[[1]]$cellType)
+ref[[1]] <- ref[[1]][ , -remove]
+ref[[1]]$cellType <- factor(ref[[1]]$cellType)
+unique(ref[[1]]$cellType)
+
+load(file.path(data_dir, "tran", "SCE_DLPFC-n3_tran-etal.rda"))
+ref[[2]] <- sce.dlpfc.tran
+rm(sce.dlpfc.tran)
+ref[[2]]$cellType <- factor(ref[[2]]$cellType)
+unique(ref[[2]]$cellType)
+
+load(file.path(data_dir, "tran", "SCE_HPC-n3_tran-etal.rda"))
+ref[[3]] <- sce.hpc.tran
+rm(sce.hpc.tran)
+unique(ref[[3]]$cellType)
+remove <- grep("drop", ref[[3]]$cellType)
+ref[[3]] <- ref[[3]][ , -remove]
+ref[[3]]$cellType <- factor(ref[[3]]$cellType)
+unique(ref[[3]]$cellType)
+
+load(file.path(data_dir, "tran", "SCE_NAc-n8_tran-etal.rda"))
+ref[[4]] <- sce.nac.tran
+rm(sce.nac.tran)
+unique(ref[[4]]$cellType)
+remove <- grep("drop", ref[[4]]$cellType)
+ref[[4]] <- ref[[4]][ , -remove]
+ref[[4]]$cellType <- factor(ref[[4]]$cellType)
+unique(ref[[4]]$cellType)
+
+load(file.path(data_dir, "tran", "SCE_sACC-n5_tran-etal.rda"))
+ref[[5]] <- sce.sacc.tran
+rm(sce.sacc.tran)
+unique(ref[[5]]$cellType)
+remove <- grep("drop", ref[[5]]$cellType)
+ref[[5]] <- ref[[5]][ , -remove]
+remove <- grep("FAT2", ref[[5]]$cellType)
+ref[[5]] <- ref[[5]][ , -remove]
+ref[[5]]$cellType <- factor(ref[[5]]$cellType)
+unique(ref[[5]]$cellType)
 ```
 
 ### Standard Pipeline
 
 ```{r}
+rds <- file.path(cache_dir, "tran_singleR_markers.rds")
+if (file.exists(rds)) {
+  singleR_markers <- readRDS(rds)
+} else {
+  singleR_markers <- getClassicMarkers(
+    ref, list(ref[[1]]$cellType, ref[[2]]$cellType, ref[[3]]$cellType, ref[[4]]$cellType, ref[[5]]$cellType),
+    BPPARAM = MulticoreParam(detectCores())
+  )
+  saveRDS(singleR_markers, rds)
+}
+
 rds <- file.path(cache_dir, "tran_singleR.rds")
 if (file.exists(rds)) {
   predictions <- readRDS(rds)
 } else {
   predictions <- SingleR(
-    GetAssayData(seurat, assay = "RNA"), ref, ref$cellType, BPPARAM = MulticoreParam(detectCores())
+    GetAssayData(seurat, assay = "RNA"),
+    ref,
+    list(ref[[1]]$cellType, ref[[2]]$cellType, ref[[3]]$cellType, ref[[4]]$cellType, ref[[5]]$cellType),
+    genes = list(singleR_markers, singleR_markers, singleR_markers, singleR_markers, singleR_markers),
+    BPPARAM = MulticoreParam(detectCores())
   )
   saveRDS(predictions, rds)
 }
-
-table(predictions$labels)
 
 seurat$tran_singleR <- factor(predictions$labels)
+table(seurat$tran_singleR)
 red_dim_plot(seurat, "umap1", "umap2", "tran_singleR", "cat")
-```
 
-### Merged Cell Types
+seurat$tran_singleR_broad <- factor(sub("_.*", "", seurat$tran_singleR))
+table(seurat$tran_singleR_broad)
+red_dim_plot(seurat, "umap1", "umap2", "tran_singleR_broad", "cat")
 
-```{r}
-ref$cellType_merged <- factor(sub("_.*", "", ref$cellType))
-unique(ref$cellType_merged)
-
-rds <- file.path(cache_dir, "tran_singleR_merged.rds")
-if (file.exists(rds)) {
-  predictions <- readRDS(rds)
-} else {
-  predictions <- SingleR(
-    GetAssayData(seurat, assay = "RNA"), ref, ref$cellType_merged, BPPARAM = MulticoreParam(detectCores())
-  )
-  saveRDS(predictions, rds)
-}
-
-table(predictions$labels)
-
-seurat$tran_singleR_merged <- factor(predictions$labels)
-red_dim_plot(seurat, "umap1", "umap2", "tran_singleR_merged", "cat")
+remove <- which(
+  seurat$tran_singleR_broad == "MSN.D1" | seurat$tran_singleR_broad == "MSN.D2" | seurat$tran_singleR_broad == "Oligo"
+)
+seurat <- seurat[ , -remove]
+table(seurat$tran_singleR_broad)
+red_dim_plot(seurat, "umap1", "umap2", "tran_singleR_broad", "cat")
 ```
 
 # References
