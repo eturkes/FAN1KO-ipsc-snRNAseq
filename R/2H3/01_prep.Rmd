@@ -107,7 +107,7 @@ knitr::opts_chunk$set(fig.width = 10, fig.height = 7, dpi = 150)
 We start by gathering together the data and forming a SingleCellExperiment (SCE) object.
 
 ```{r}
-data <- Read10X(file.path(data_dir, "results", "2H3", "filtered_feature_bc_matrix"))
+data <- Read10X(file.path(data_dir, "results", group, "filtered_feature_bc_matrix"))
 sce <- SingleCellExperiment(list(counts=data$`Gene Expression`))
 rm(data)
 
@@ -123,24 +123,31 @@ First, we add cell QC metric metadata to the SCE object.
 
 ```{r}
 mito <- grep("^MT-", rownames(sce), ignore.case = TRUE)
+ribo <- grep("^RP[SL][[:digit:]]", rownames(sce), ignore.case = TRUE)
 
 if (length(mito) != 0) {
-  sce <- addPerCellQC(sce, list(mito = mito))
+  sce <- addPerCellQC(sce, list(mito = mito, ribo = ribo))
   if (is.null(batch)) {
-    remove <- quickPerCellQC(colData(sce), percent_subsets = "subsets_mito_percent")
+    remove <- quickPerCellQC(colData(sce), percent_subsets = c("subsets_mito_percent", "subsets_ribo_percent"))
   } else {
-    remove <- quickPerCellQC(colData(sce), percent_subsets = "subsets_mito_percent", batch = batch)
+    remove <- quickPerCellQC(
+      colData(sce), percent_subsets = c("subsets_mito_percent", "subsets_ribo_percent"), batch = batch
+    )
   }
 
   if (protocol[3] == "single-nuc") {
+
     cat(paste0("Removed ", length(mito), " mitochondrial genes:"), rownames(sce)[mito])
     sce <- sce[-mito, ]
     dim(sce)
+
+    cat(paste0("Removed ", length(ribo), " ribosomal genes:"), rownames(sce)[ribo])
+    sce <- sce[-ribo, ]
+    dim(sce)
+
   } else {
-    cat(
-      paste0("Found but did not remove ", length(mito), " mitochondrial genes:"),
-      rownames(sce)[mito]
-    )
+    cat(paste0("Found but did not remove ", length(mito), " mitochondrial genes:"), rownames(sce)[mito])
+    cat(paste0("Found but did not remove ", length(ribo), " ribosomal genes:"), rownames(sce)[ribo])
   }
 
 } else {
@@ -228,12 +235,8 @@ We run a pipeline that applies normalization and scaling, dimensionality reducti
 ```{r}
 # Remove redundant QC metrics.
 # ----------------------------
-if (length(mito) != 0) {
-  colData(sce)[(length(names(colData(sce))) - 1):length(names(colData(sce)))] <- NULL
-  colData(sce)[(length(names(colData(sce))) - 4):(length(names(colData(sce))) - 2)] <- NULL
-} else {
-  colData(sce)[(length(names(colData(sce))) - 2):length(names(colData(sce)))] <- NULL
-}
+colData(sce)[(length(names(colData(sce))) - 1):length(names(colData(sce)))] <- NULL
+colData(sce)[1:2] <- NULL
 rowData(sce) <- NULL
 # ----------------------------
 
@@ -269,6 +272,9 @@ red_dim_plot(seurat, "umap1", "umap2", "nCount_SCT", "cont") + ggtitle("Number o
 
 if (length(mito) != 0) {
   red_dim_plot(seurat, "umap1", "umap2", "subsets_mito_percent", "cont") + ggtitle("Mitochondrial Percentage")
+}
+if (length(ribo) != 0) {
+  red_dim_plot(seurat, "umap1", "umap2", "subsets_ribo_percent", "cont") + ggtitle("Ribosomal Percentage")
 }
 ```
 
