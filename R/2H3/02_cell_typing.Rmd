@@ -63,7 +63,8 @@ The data here will be referenced using the name ``r unlist(strsplit(getwd(), "/"
 #    Emir Turkes can be contacted at emir.turkes@eturkes.com
 
 packages <- c(
-  "conflicted", "Seurat", "dplyr", "ggrepel", "ggplot2", "GSVA", "patchwork", "SingleR", "BiocParallel", "parallel"
+  "conflicted", "Seurat", "DT", "dplyr", "ggrepel", "ggplot2", "GSVA", "patchwork", "SingleR", "BiocParallel",
+  "parallel"
 )
 invisible(suppressPackageStartupMessages(lapply(packages, library, character.only = TRUE)))
 source(file.path("..", "utils.R"))
@@ -92,7 +93,61 @@ knitr::opts_chunk$set(fig.width = 10, fig.height = 7, dpi = 150)
 seurat <- readRDS(file.path(cache_dir, "..", "01", "all_seurat.rds"))
 seurat
 
+subset_list <- list(seurat)
+subset_names <- "all"
+
 red_dim_plot(seurat, "umap1", "umap2", "seurat_clusters", "cat")
+```
+
+# Genes of Interest
+
+```{r}
+genes <- read.delim(file.path(data_dir, "gene-sets", "genes-of-interest.tsv"))
+datatable_download(genes)
+```
+
+## MMR
+
+```{r, fig.width = 15, fig.height = 14}
+# gene_plot(subset_list, subset_names, trimws(genes$MMR[nzchar(genes$MMR)]))
+
+gene_plot(subset_list, subset_names, c(trimws(genes$MMR[nzchar(genes$MMR)]), "HTT", "FAN1", "EXO1", trimws(genes$Housekeeping[nzchar(genes$Housekeeping)])[-3]))
+```
+
+## Other
+
+```{r, fig.height = 6, fig.width = 10}
+gene_plot(subset_list, subset_names, trimws(genes$Other[nzchar(genes$Other)]))
+```
+
+## Neuronal
+
+```{r, fig.height = 6, fig.width = 10}
+gene_plot(subset_list, subset_names, trimws(genes$Neuronal[nzchar(genes$Neuronal)]))
+```
+
+## MSN
+
+```{r, fig.height = 6, fig.width = 15}
+gene_plot(subset_list, subset_names, trimws(genes$MSN[nzchar(genes$MSN)]))
+```
+
+## Astrocytic
+
+```{r, fig.height = 6}
+gene_plot(subset_list, subset_names, trimws(genes$Astrocytic[nzchar(genes$Astrocytic)]))
+```
+
+## Proliferative
+
+```{r, fig.height = 6, fig.width = 10}
+gene_plot(subset_list, subset_names, trimws(genes$Proliferative[nzchar(genes$Proliferative)]))
+```
+
+## Housekeeping
+
+```{r, fig.height = 8}
+gene_plot(subset_list, subset_names, trimws(genes$Housekeeping[nzchar(genes$Housekeeping)]))
 ```
 
 # Individual Marker Genes
