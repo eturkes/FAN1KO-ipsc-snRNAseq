@@ -44,15 +44,14 @@ RUN apt-get update \
         -e "install.packages('conflicted')" \
         -e "install.packages('DT')" \
         -e "install.packages('viridis')" \
+        -e "install.packages('Seurat')" \
         -e "install.packages('BiocManager')" \
-        -e "install.packages('remotes')" \
         -e "BiocManager::install('SingleCellExperiment')" \
         -e "BiocManager::install('scuttle')" \
         -e "BiocManager::install('DropletUtils')" \
         -e "BiocManager::install('glmGamPoi')" \
         -e "BiocManager::install('GSVA')" \
         -e "BiocManager::install('SingleR')" \
-        -e "remotes::install_github('satijalab/seurat', ref = 'develop')" \
     && apt-get clean \
     && rm -Rf \
         /var/lib/apt/lists/ \

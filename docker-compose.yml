@@ -27,13 +27,13 @@ version: "3"
 
 services:
   all:
-    image: eturkes/fan1ko-ipsc-snrnaseq:R4.2.1v3
+    image: eturkes/fan1ko-ipsc-snrnaseq:R4.2.1v4
     volumes:
       - ".:/home/rstudio/FAN1KO-ipsc-snRNAseq:rw"
     command: Rscript -e "source('/home/rstudio/FAN1KO-ipsc-snRNAseq/R/run_all.R')"
 
   rstudio:
-    image: eturkes/fan1ko-ipsc-snrnaseq:R4.2.1v3
+    image: eturkes/fan1ko-ipsc-snrnaseq:R4.2.1v4
     volumes:
       - ".:/home/rstudio/FAN1KO-ipsc-snRNAseq:rw"
     ports:
