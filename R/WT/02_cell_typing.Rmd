@@ -294,12 +294,24 @@ DefaultAssay(seurat) <- "SCT"
 ## Tran
 
 ```{r}
-rds <- file.path(cache_dir, "tran_gsva_highvar.rds")
+tran_markers_expanded <- read.delim(file.path(data_dir, "gene-sets", "tran_markers_expanded.tsv"))
+tran_markers_expanded <- as.list(tran_markers_expanded)
+
+tran_markers_aggregated <- tran_markers_expanded
+names(tran_markers_aggregated) <- gsub("(.+?)(\\_.*)", "\\1", names(tran_markers_expanded))
+tran_markers_aggregated <- tapply(
+  unlist(tran_markers_aggregated, use.names = FALSE),
+  rep(names(tran_markers_aggregated), lengths(tran_markers_aggregated)),
+  c
+)
+tran_markers_aggregated <- lapply(tran_markers_aggregated, function(x) x[!(x == "")])
+
+rds <- file.path(cache_dir, "tran_gsva_aggregated.rds")
 if (file.exists(rds)) {
   gsva <- readRDS(rds)
 } else {
   gsva <- gsva(
-    as.matrix(GetAssayData(seurat)), tran_markers_highvar, method = "ssgsea", ssgsea.norm = FALSE, verbose = FALSE
+    as.matrix(GetAssayData(seurat)), tran_markers_aggregated, method = "ssgsea", ssgsea.norm = FALSE, verbose = FALSE
   )
   saveRDS(gsva, rds)
 }
