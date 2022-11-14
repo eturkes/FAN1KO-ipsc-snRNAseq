@@ -299,7 +299,7 @@ cluster_pipeline <- function(
     # Perform Louvain clustering.
     # ---------------------------
     if (is.null(resolution)) {
-      resolution <- (dim(seurat)[2] / 3000) * 0.8 # Default is optimal for 3K cells so we scale it.
+      resolution <- (dim(seurat)[2] / 3000)
     }
     seurat <- FindNeighbors(seurat, reduction, dims, verbose = FALSE)
     seurat <- FindClusters(seurat, resolution = resolution, verbose = FALSE)
