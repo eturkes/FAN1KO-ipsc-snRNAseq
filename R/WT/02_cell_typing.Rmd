@@ -271,7 +271,8 @@ if (file.exists(rds)) {
   gsva <- readRDS(rds)
 } else {
   gsva <- gsva(
-    as.matrix(GetAssayData(seurat)), smith_markers_highvar, method = "ssgsea", ssgsea.norm = FALSE, verbose = FALSE
+    as.matrix(GetAssayData(seurat)), smith_markers_highvar, method = "ssgsea",
+    ssgsea.norm = FALSE, verbose = FALSE, BPPARAM = MulticoreParam(detectCores())
   )
   saveRDS(gsva, rds)
 }
@@ -311,7 +312,8 @@ if (file.exists(rds)) {
   gsva <- readRDS(rds)
 } else {
   gsva <- gsva(
-    as.matrix(GetAssayData(seurat)), tran_markers_aggregated, method = "ssgsea", ssgsea.norm = FALSE, verbose = FALSE
+    as.matrix(GetAssayData(seurat)), tran_markers_aggregated, method = "ssgsea",
+    ssgsea.norm = FALSE, verbose = FALSE, BPPARAM = MulticoreParam(detectCores())
   )
   saveRDS(gsva, rds)
 }
