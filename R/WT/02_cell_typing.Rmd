@@ -285,7 +285,7 @@ DefaultAssay(seurat) <- "GSVA"
 for (i in seq(nrow(seurat))) {
   print(
     FeaturePlot(seurat, rownames(seurat)[i], order = TRUE) +
-      scale_color_gradientn(colors = c("blue", "#F8F8F8", "red"),  limits = c(-1, 1))
+      scale_color_gradientn(colors = c("blue", "lightgray", "red"),  limits = c(-1, 1))
   )
 }
 
@@ -326,7 +326,7 @@ DefaultAssay(seurat) <- "GSVA"
 for (i in seq(nrow(seurat))) {
   print(
     FeaturePlot(seurat, rownames(seurat)[i], order = TRUE) +
-      scale_color_gradientn(colors = c("blue", "#F8F8F8", "red"),  limits = c(-1, 1))
+      scale_color_gradientn(colors = c("blue", "lightgray", "red"),  limits = c(-1, 1))
   )
 }
 
