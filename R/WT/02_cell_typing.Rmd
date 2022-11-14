@@ -1,0 +1,424 @@
+---
+title: '02 Cell Typing - `r unlist(strsplit(getwd(), "/"))[6]`'
+author:
+  - name: "Emir Turkes [emir.turkes@eturkes.com]"
+  - name: "UK Dementia Research Institute at UCL"
+date: '`r strftime(Sys.time(), "%B %d, %Y")`'
+link-citations: true
+output:
+  html_document:
+    code_folding: hide
+    number_sections: true
+    theme: lumen
+    highlight: haddock
+    toc: true
+    toc_depth: 3
+    toc_float:
+      collapsed: false
+      smooth_scroll: false
+knit: (function(inputFile, encoding) {
+  rmarkdown::render(inputFile, encoding = encoding, output_file = file.path(
+    "..", "..", "results", unlist(strsplit(getwd(), "/"))[6], "02_cell_typing.html"
+  ))})
+---
+
+<style type="text/css">
+body {font-size: 16px;}
+h1.title {font-size: 35px;}
+h1 {font-size: 24px;}
+h2 {font-size: 22px;}
+h3 {font-size: 20px;}
+.toc-content {padding-left: 0px; padding-right: 0px;}
+div.tocify {width: 100%;}
+.tocify-subheader .tocify-item {font-size: 0.95em; padding-left: 25px; text-indent: 0;}
+.tocify-subheader .tocify-subheader .tocify-item {
+  font-size: 0.95em; padding-left: 35px; text-indent: 0;
+}
+div.main-container {max-width: none; width: 100%;}
+</style>
+
+*This file is a part of [FAN1 KO iPSC snRNAseq](https://github.com/eturkes/FAN1KO-ipsc-snRNAseq).*
+
+The data here will be referenced using the name ``r unlist(strsplit(getwd(), "/"))[6]``.
+
+```{r}
+#    This file is part of FAN1KO-ipsc-snRNAseq.
+#    Copyright (C) 2022  Emir Turkes, Emma Bunting, Jessica Olive,
+#    Jasmine Donaldson, Sarah Tabrizi, UK Dementia Research Institute at
+#    UCL
+#
+#    This program is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation, either version 3 of the License, or
+#    (at your option) any later version.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License
+#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+#    Emir Turkes can be contacted at emir.turkes@eturkes.com
+
+packages <- c(
+  "conflicted", "Seurat", "DT", "dplyr", "ggrepel", "ggplot2", "GSVA", "patchwork", "SingleR", "BiocParallel",
+  "parallel"
+)
+invisible(suppressPackageStartupMessages(lapply(packages, library, character.only = TRUE)))
+source(file.path("..", "utils.R"))
+
+`%notin%` <- Negate(`%in%`)
+
+analysis_no <- 2
+data_name <- unlist(strsplit(getwd(), "/"))[6] # Name of dataset.
+data_dir <- file.path("..", "..", "data") # Backed up data.
+results_dir <- file.path("..", "..", "results")
+
+# Unique cache directory for each analysis number.
+# ------------------------------------------------
+cache_dir <- file.path("..", "..", "cache", data_name, paste0("0", analysis_no))
+if (!dir.exists(cache_dir)) {
+  dir.create(cache_dir, recursive = TRUE)
+}
+# ------------------------------------------------
+
+knitr::opts_chunk$set(fig.width = 10, fig.height = 7, dpi = 150)
+```
+
+# Prep
+
+```{r}
+seurat <- readRDS(file.path(cache_dir, "..", "01", "all_seurat.rds"))
+seurat
+
+subset_list <- list(seurat)
+subset_names <- "all"
+
+red_dim_plot(seurat, "umap1", "umap2", "seurat_clusters", "cat")
+```
+
+# Genes of Interest
+
+```{r}
+genes <- read.delim(file.path(data_dir, "gene-sets", "genes-of-interest.tsv"))
+datatable_download(genes)
+```
+
+## MMR
+
+```{r, fig.width = 15, fig.height = 14}
+# gene_plot(subset_list, subset_names, trimws(genes$MMR[nzchar(genes$MMR)]))
+
+gene_plot(subset_list, subset_names, c(trimws(genes$MMR[nzchar(genes$MMR)]), "HTT", "FAN1", "EXO1", trimws(genes$Housekeeping[nzchar(genes$Housekeeping)])[-3]))
+```
+
+## Other
+
+```{r, fig.height = 6, fig.width = 10}
+gene_plot(subset_list, subset_names, trimws(genes$Other[nzchar(genes$Other)]))
+```
+
+## Neuronal
+
+```{r, fig.height = 6, fig.width = 10}
+gene_plot(subset_list, subset_names, trimws(genes$Neuronal[nzchar(genes$Neuronal)]))
+```
+
+## MSN
+
+```{r, fig.height = 6, fig.width = 15}
+gene_plot(subset_list, subset_names, trimws(genes$MSN[nzchar(genes$MSN)]))
+```
+
+## Astrocytic
+
+```{r, fig.height = 6}
+gene_plot(subset_list, subset_names, trimws(genes$Astrocytic[nzchar(genes$Astrocytic)]))
+```
+
+## Proliferative
+
+```{r, fig.height = 6, fig.width = 10}
+gene_plot(subset_list, subset_names, trimws(genes$Proliferative[nzchar(genes$Proliferative)]))
+```
+
+## Housekeeping
+
+```{r, fig.height = 8}
+gene_plot(subset_list, subset_names, trimws(genes$Housekeeping[nzchar(genes$Housekeeping)]))
+```
+
+# Individual Marker Genes
+
+## Smith-Geater
+
+```{r}
+smith_markers <- vector("list", length = 7)
+names(smith_markers) <- c(
+  "mature neuron", "D1 and D2+ spiny neurons", "NSC", "D1+ spiny and cholinergic striatal neurons",
+  "D1+ spiny neurons", "NPCs", "immature neurons"
+)
+smith_markers[[1]] <- c("TPD52L1", "MEF2C", "PAX6", "SIX3")
+smith_markers[[2]] <- c("MEIS2", "DLX5", "HPCA")
+smith_markers[[3]] <- c("NES", "CCND1")
+smith_markers[[4]] <- c("DLX5", "ISL1", "RAC3", "ARG2")
+smith_markers[[5]] <- c("MEIS2", "PPP1R1A", "CAMKV", "RAC3", "GRIN2B")
+smith_markers[[6]] <- c("CCND1", "HOMER3", "EBF1")
+smith_markers[[7]] <- c("VGF", "H1F0")
+
+remove <- unique(unlist(smith_markers))[unique(unlist(smith_markers)) %notin% VariableFeatures(seurat)]
+smith_markers_highvar <- lapply(smith_markers, function(x) x[!(x %in% remove)])
+
+for (i in seq_along(smith_markers_highvar)) {
+  if (any(smith_markers_highvar[[i]] %in% rownames(seurat))) {
+    print(
+      FeaturePlot(seurat, smith_markers_highvar[[i]], order = TRUE, cols = c("lightgrey", "red")) +
+        plot_annotation(
+          names(smith_markers_highvar)[i],
+          theme = theme(plot.title = element_text(hjust = 0.5, size = 18, face = "bold"))
+        )
+    )
+  }
+}
+```
+
+## Tran
+
+```{r}
+tran_markers <- read.delim(file.path(data_dir, "gene-sets", "tran_markers.tsv"))
+tran_markers <- as.list(tran_markers)
+
+remove <- unique(unlist(tran_markers))[unique(unlist(tran_markers)) %notin% VariableFeatures(seurat)]
+tran_markers_highvar <- lapply(tran_markers, function(x) x[!(x %in% remove)])
+
+for (i in seq_along(tran_markers_highvar)) {
+  if (any(tran_markers_highvar[[i]] %in% rownames(seurat))) {
+    print( # Only plot first four genes.
+      FeaturePlot(seurat, tran_markers_highvar[[i]][1:4], order = TRUE, cols = c("lightgrey", "red")) +
+        plot_annotation(
+          names(tran_markers_highvar)[i],
+          theme = theme(plot.title = element_text(hjust = 0.5, size = 18, face = "bold"))
+        )
+    )
+  }
+}
+```
+
+## Bhaduri
+
+```{r}
+bhaduri_markers <- read.delim(file.path(data_dir, "gene-sets", "curated-development-genes.tsv"), check.names = FALSE)
+
+bhaduri_markers <- bhaduri_markers[ , 1:which(colnames(bhaduri_markers) == "Polioudakis Neuron 2019")]
+bhaduri_markers <- bhaduri_markers[ , -(which(colnames(bhaduri_markers) == "oRG vRG shared genes"))]
+bhaduri_markers <- Filter(function(x) !all(is.na(x)), bhaduri_markers)
+bhaduri_markers <- as.list(bhaduri_markers)
+bhaduri_markers <- lapply(bhaduri_markers, function(x) x[!(x == "")])
+
+remove <- c(
+  "SORCS1", "ADRA2A", "SLA", "STMN2", "SORBS2", "ELAVL2", "DCX", "ZFHX4", "GLI3", "CD99", "IGFBP7",
+  "AURKC", "HMGB1", "HMGB3", "CTNNB1", "HES1", "VIM", "PTN", "CLU", "IL33", "NPR3", "CCNB2",
+  "KIF15", "ARHGAP11B", "CENPK", "NEUROD2", "NEUROD6", "DLX2", "ERBB4", "SOX5", "BCL11B"
+)
+bhaduri_markers <- bhaduri_markers
+for (i in seq_along(remove)) {
+  bhaduri_markers <- rapply(bhaduri_markers, function(x) ifelse(x == remove[i], "", x), how = "replace")
+}
+bhaduri_markers <- lapply(bhaduri_markers, function(x) x[!(x == "")])
+remove <- which(
+  names(bhaduri_markers) %in% c(
+    "Radial Glia_vRG", "Radial Glia_tRG", "Microglia", "oRG specific genes", "vRG specific genes"
+  )
+)
+bhaduri_markers <- bhaduri_markers[-remove]
+
+remove <- unique(unlist(bhaduri_markers))[unique(unlist(bhaduri_markers)) %notin% VariableFeatures(seurat)]
+bhaduri_markers_highvar <- lapply(bhaduri_markers, function(x) x[!(x %in% remove)])
+
+for (i in seq_along(bhaduri_markers)) {
+  if (any(bhaduri_markers[[i]] %in% rownames(seurat))) {
+    print(
+      FeaturePlot(seurat, bhaduri_markers[[i]], order = TRUE, cols = c("lightgrey", "red")) +
+        plot_annotation(
+          names(bhaduri_markers)[i],
+          theme = theme(plot.title = element_text(hjust = 0.5, size = 18, face = "bold"))
+        )
+    )
+  }
+}
+```
+
+## Tran Figure S4 Markers
+
+```{r}
+tran_markers_figS4 <- read.delim(file.path(data_dir, "gene-sets", "tran_markers_figS4.tsv"), header = FALSE)
+tran_markers_figS4 <- tran_markers_figS4[tran_markers_figS4$V1 %in% VariableFeatures(seurat), ]
+
+for (i in seq_along(tran_markers_figS4)) {
+  print(FeaturePlot(seurat, tran_markers_figS4[i], order = TRUE, cols = c("lightgrey", "red")))
+}
+```
+
+# Gene Sets
+
+## Smith-Geater
+
+```{r}
+rds <- file.path(cache_dir, "smith_gsva_highvar.rds")
+if (file.exists(rds)) {
+  gsva <- readRDS(rds)
+} else {
+  gsva <- gsva(
+    as.matrix(GetAssayData(seurat)), smith_markers_highvar, method = "ssgsea", ssgsea.norm = FALSE, verbose = FALSE
+  )
+  saveRDS(gsva, rds)
+}
+gsva <- (2 * (gsva - min(gsva)) / (max(gsva) - min(gsva))) - 1
+
+gsva_seurat <- CreateAssayObject(data = gsva)
+seurat[["GSVA"]] <- gsva_seurat
+DefaultAssay(seurat) <- "GSVA"
+
+for (i in seq(nrow(seurat))) {
+  print(
+    FeaturePlot(seurat, rownames(seurat)[i], order = TRUE) +
+      scale_color_gradientn(colors = c("blue", "#F8F8F8", "red"),  limits = c(-1, 1))
+  )
+}
+
+DefaultAssay(seurat) <- "SCT"
+```
+
+## Tran
+
+```{r}
+rds <- file.path(cache_dir, "tran_gsva_highvar.rds")
+if (file.exists(rds)) {
+  gsva <- readRDS(rds)
+} else {
+  gsva <- gsva(
+    as.matrix(GetAssayData(seurat)), tran_markers_highvar, method = "ssgsea", ssgsea.norm = FALSE, verbose = FALSE
+  )
+  saveRDS(gsva, rds)
+}
+gsva <- (2 * (gsva - min(gsva)) / (max(gsva) - min(gsva))) - 1
+
+gsva_seurat <- CreateAssayObject(data = gsva)
+seurat[["GSVA"]] <- gsva_seurat
+DefaultAssay(seurat) <- "GSVA"
+
+for (i in seq(nrow(seurat))) {
+  print(
+    FeaturePlot(seurat, rownames(seurat)[i], order = TRUE) +
+      scale_color_gradientn(colors = c("blue", "#F8F8F8", "red"),  limits = c(-1, 1))
+  )
+}
+
+DefaultAssay(seurat) <- "SCT"
+```
+
+# SingleR
+
+## Tran
+
+```{r}
+ref <- vector("list", length = 5)
+
+load(file.path(data_dir, "tran", "SCE_AMY-n5_tran-etal.rda"))
+ref[[1]] <- sce.amy.tran
+rm(sce.amy.tran)
+unique(ref[[1]]$cellType)
+remove <- grep("drop", ref[[1]]$cellType)
+ref[[1]] <- ref[[1]][ , -remove]
+ref[[1]]$cellType <- factor(ref[[1]]$cellType)
+unique(ref[[1]]$cellType)
+
+load(file.path(data_dir, "tran", "SCE_DLPFC-n3_tran-etal.rda"))
+ref[[2]] <- sce.dlpfc.tran
+rm(sce.dlpfc.tran)
+ref[[2]]$cellType <- factor(ref[[2]]$cellType)
+unique(ref[[2]]$cellType)
+
+load(file.path(data_dir, "tran", "SCE_HPC-n3_tran-etal.rda"))
+ref[[3]] <- sce.hpc.tran
+rm(sce.hpc.tran)
+unique(ref[[3]]$cellType)
+remove <- grep("drop", ref[[3]]$cellType)
+ref[[3]] <- ref[[3]][ , -remove]
+ref[[3]]$cellType <- factor(ref[[3]]$cellType)
+unique(ref[[3]]$cellType)
+
+load(file.path(data_dir, "tran", "SCE_NAc-n8_tran-etal.rda"))
+ref[[4]] <- sce.nac.tran
+rm(sce.nac.tran)
+unique(ref[[4]]$cellType)
+remove <- grep("drop", ref[[4]]$cellType)
+ref[[4]] <- ref[[4]][ , -remove]
+ref[[4]]$cellType <- factor(ref[[4]]$cellType)
+unique(ref[[4]]$cellType)
+
+load(file.path(data_dir, "tran", "SCE_sACC-n5_tran-etal.rda"))
+ref[[5]] <- sce.sacc.tran
+rm(sce.sacc.tran)
+unique(ref[[5]]$cellType)
+remove <- grep("drop", ref[[5]]$cellType)
+ref[[5]] <- ref[[5]][ , -remove]
+remove <- grep("FAT2", ref[[5]]$cellType)
+ref[[5]] <- ref[[5]][ , -remove]
+ref[[5]]$cellType <- factor(ref[[5]]$cellType)
+unique(ref[[5]]$cellType)
+```
+
+### Standard Pipeline
+
+```{r}
+rds <- file.path(cache_dir, "tran_singleR_markers.rds")
+if (file.exists(rds)) {
+  singleR_markers <- readRDS(rds)
+} else {
+  singleR_markers <- getClassicMarkers(
+    ref, list(ref[[1]]$cellType, ref[[2]]$cellType, ref[[3]]$cellType, ref[[4]]$cellType, ref[[5]]$cellType),
+    BPPARAM = MulticoreParam(detectCores())
+  )
+  saveRDS(singleR_markers, rds)
+}
+
+rds <- file.path(cache_dir, "tran_singleR.rds")
+if (file.exists(rds)) {
+  predictions <- readRDS(rds)
+} else {
+  predictions <- SingleR(
+    GetAssayData(seurat, assay = "RNA"),
+    ref,
+    list(ref[[1]]$cellType, ref[[2]]$cellType, ref[[3]]$cellType, ref[[4]]$cellType, ref[[5]]$cellType),
+    genes = list(singleR_markers, singleR_markers, singleR_markers, singleR_markers, singleR_markers),
+    BPPARAM = MulticoreParam(detectCores())
+  )
+  saveRDS(predictions, rds)
+}
+
+seurat$tran_singleR <- factor(predictions$labels)
+table(seurat$tran_singleR)
+red_dim_plot(seurat, "umap1", "umap2", "tran_singleR", "cat")
+
+seurat$tran_singleR_broad <- factor(sub("_.*", "", seurat$tran_singleR))
+table(seurat$tran_singleR_broad)
+red_dim_plot(seurat, "umap1", "umap2", "tran_singleR_broad", "cat")
+
+remove <- which(
+  seurat$tran_singleR_broad == "MSN.D1" | seurat$tran_singleR_broad == "MSN.D2" | seurat$tran_singleR_broad == "Oligo"
+)
+seurat <- seurat[ , -remove]
+table(seurat$tran_singleR_broad)
+red_dim_plot(seurat, "umap1", "umap2", "tran_singleR_broad", "cat")
+```
+
+# References
+
+This is the concluding section of the document. Here we output the `sessionInfo` and create a bibliography for works cited.
+
+```{r}
+sessionInfo()
+```
