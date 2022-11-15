@@ -426,7 +426,8 @@ table(seurat$tran_singleR_broad)
 red_dim_plot(seurat, "umap1", "umap2", "tran_singleR_broad", "cat")
 
 remove <- which(
-  seurat$tran_singleR_broad == "MSN.D1" | seurat$tran_singleR_broad == "MSN.D2" | seurat$tran_singleR_broad == "Oligo"
+  seurat$tran_singleR_broad == "MSN.D1" | seurat$tran_singleR_broad == "MSN.D2" | seurat$tran_singleR_broad == "Oligo" |
+    seurat$tran_singleR_broad == "Macrophage" | seurat$tran_singleR_broad == "Micro"
 )
 seurat <- seurat[ , -remove]
 table(seurat$tran_singleR_broad)
