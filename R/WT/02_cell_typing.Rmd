@@ -168,15 +168,12 @@ smith_markers[[5]] <- c("MEIS2", "PPP1R1A", "CAMKV", "RAC3", "GRIN2B")
 smith_markers[[6]] <- c("CCND1", "HOMER3", "EBF1")
 smith_markers[[7]] <- c("VGF", "H1F0")
 
-remove <- unique(unlist(smith_markers))[unique(unlist(smith_markers)) %notin% VariableFeatures(seurat)]
-smith_markers_highvar <- lapply(smith_markers, function(x) x[!(x %in% remove)])
-
-for (i in seq_along(smith_markers_highvar)) {
-  if (any(smith_markers_highvar[[i]] %in% rownames(seurat))) {
+for (i in seq_along(smith_markers)) {
+  if (any(smith_markers[[i]] %in% rownames(seurat))) {
     print(
-      FeaturePlot(seurat, smith_markers_highvar[[i]], order = TRUE, cols = c("lightgrey", "red")) +
+      FeaturePlot(seurat, smith_markers[[i]], order = TRUE, cols = c("lightgrey", "red")) +
         plot_annotation(
-          names(smith_markers_highvar)[i],
+          names(smith_markers)[i],
           theme = theme(plot.title = element_text(hjust = 0.5, size = 18, face = "bold"))
         )
     )
@@ -282,12 +279,12 @@ for (i in seq_along(bhaduri_markers)) {
 ## Smith-Geater
 
 ```{r}
-rds <- file.path(cache_dir, "smith_gsva_highvar.rds")
+rds <- file.path(cache_dir, "smith_gsva.rds")
 if (file.exists(rds)) {
   gsva <- readRDS(rds)
 } else {
   gsva <- gsva(
-    as.matrix(GetAssayData(seurat)), smith_markers_highvar, method = "ssgsea",
+    as.matrix(GetAssayData(seurat)), smith_markers, method = "ssgsea",
     ssgsea.norm = FALSE, verbose = FALSE, BPPARAM = MulticoreParam(detectCores())
   )
   saveRDS(gsva, rds)
