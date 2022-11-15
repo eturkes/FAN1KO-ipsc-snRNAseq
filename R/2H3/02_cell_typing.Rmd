@@ -222,6 +222,17 @@ for (i in seq_along(tran_markers_aggregated_highvar)) {
 }
 ```
 
+## Tran Figure S4 Markers
+
+```{r}
+tran_markers_figS4 <- read.delim(file.path(data_dir, "gene-sets", "tran_markers_figS4.tsv"), header = FALSE)
+tran_markers_figS4 <- tran_markers_figS4[tran_markers_figS4$V1 %in% VariableFeatures(seurat), ]
+
+for (i in seq_along(tran_markers_figS4)) {
+  print(FeaturePlot(seurat, tran_markers_figS4[i], order = TRUE, cols = c("lightgrey", "red")))
+}
+```
+
 ## Bhaduri
 
 ```{r}
@@ -263,17 +274,6 @@ for (i in seq_along(bhaduri_markers)) {
         )
     )
   }
-}
-```
-
-## Tran Figure S4 Markers
-
-```{r}
-tran_markers_figS4 <- read.delim(file.path(data_dir, "gene-sets", "tran_markers_figS4.tsv"), header = FALSE)
-tran_markers_figS4 <- tran_markers_figS4[tran_markers_figS4$V1 %in% VariableFeatures(seurat), ]
-
-for (i in seq_along(tran_markers_figS4)) {
-  print(FeaturePlot(seurat, tran_markers_figS4[i], order = TRUE, cols = c("lightgrey", "red")))
 }
 ```
 
