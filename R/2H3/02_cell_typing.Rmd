@@ -351,13 +351,17 @@ unique(ref[[1]]$cellType)
 remove <- grep("drop", ref[[1]]$cellType)
 ref[[1]] <- ref[[1]][ , -remove]
 ref[[1]]$cellType <- factor(ref[[1]]$cellType)
+ref[[1]]$broad_cellType <- factor(sub("_.*", "", ref[[1]]$cellType))
 unique(ref[[1]]$cellType)
+unique(ref[[1]]$broad_cellType)
 
 load(file.path(data_dir, "tran", "SCE_DLPFC-n3_tran-etal.rda"))
 ref[[2]] <- sce.dlpfc.tran
 rm(sce.dlpfc.tran)
 ref[[2]]$cellType <- factor(ref[[2]]$cellType)
+ref[[2]]$broad_cellType <- factor(sub("_.*", "", ref[[2]]$cellType))
 unique(ref[[2]]$cellType)
+unique(ref[[2]]$broad_cellType)
 
 load(file.path(data_dir, "tran", "SCE_HPC-n3_tran-etal.rda"))
 ref[[3]] <- sce.hpc.tran
@@ -366,7 +370,9 @@ unique(ref[[3]]$cellType)
 remove <- grep("drop", ref[[3]]$cellType)
 ref[[3]] <- ref[[3]][ , -remove]
 ref[[3]]$cellType <- factor(ref[[3]]$cellType)
+ref[[3]]$broad_cellType <- factor(sub("_.*", "", ref[[3]]$cellType))
 unique(ref[[3]]$cellType)
+unique(ref[[3]]$broad_cellType)
 
 load(file.path(data_dir, "tran", "SCE_NAc-n8_tran-etal.rda"))
 ref[[4]] <- sce.nac.tran
@@ -375,7 +381,9 @@ unique(ref[[4]]$cellType)
 remove <- grep("drop", ref[[4]]$cellType)
 ref[[4]] <- ref[[4]][ , -remove]
 ref[[4]]$cellType <- factor(ref[[4]]$cellType)
+ref[[4]]$broad_cellType <- factor(sub("_.*", "", ref[[4]]$cellType))
 unique(ref[[4]]$cellType)
+unique(ref[[4]]$broad_cellType)
 
 load(file.path(data_dir, "tran", "SCE_sACC-n5_tran-etal.rda"))
 ref[[5]] <- sce.sacc.tran
@@ -386,10 +394,12 @@ ref[[5]] <- ref[[5]][ , -remove]
 remove <- grep("FAT2", ref[[5]]$cellType)
 ref[[5]] <- ref[[5]][ , -remove]
 ref[[5]]$cellType <- factor(ref[[5]]$cellType)
+ref[[5]]$broad_cellType <- factor(sub("_.*", "", ref[[5]]$cellType))
 unique(ref[[5]]$cellType)
+unique(ref[[5]]$broad_cellType)
 ```
 
-### Standard Pipeline
+### All Cell-types
 
 ```{r}
 rds <- file.path(cache_dir, "tran_singleR_markers.rds")
@@ -431,6 +441,45 @@ remove <- which(
 seurat <- seurat[ , -remove]
 table(seurat$tran_singleR_broad)
 red_dim_plot(seurat, "umap1", "umap2", "tran_singleR_broad", "cat")
+```
+
+### Broad Cell-types
+
+```{r}
+rds <- file.path(cache_dir, "tran_singleR_markers_broad.rds")
+if (file.exists(rds)) {
+  singleR_markers <- readRDS(rds)
+} else {
+  singleR_markers <- getClassicMarkers(
+    ref,
+    list(
+      ref[[1]]$broad_cellType, ref[[2]]$broad_cellType, ref[[3]]$broad_cellType,
+      ref[[4]]$broad_cellType, ref[[5]]$broad_cellType
+    ),
+    BPPARAM = MulticoreParam(detectCores())
+  )
+  saveRDS(singleR_markers, rds)
+}
+
+rds <- file.path(cache_dir, "tran_singleR_broad.rds")
+if (file.exists(rds)) {
+  predictions <- readRDS(rds)
+} else {
+  predictions <- SingleR(
+    GetAssayData(seurat, assay = "RNA"),
+    ref,
+    list(
+      ref[[1]]$broad_cellType, ref[[2]]$broad_cellType, ref[[3]]$broad_cellType,
+      ref[[4]]$broad_cellType, ref[[5]]$broad_cellType
+    ),
+    genes = list(singleR_markers, singleR_markers, singleR_markers, singleR_markers, singleR_markers)
+  )
+  saveRDS(predictions, rds)
+}
+
+seurat$tran_singleR <- factor(predictions$labels)
+table(seurat$tran_singleR)
+red_dim_plot(seurat, "umap1", "umap2", "tran_singleR", "cat")
 ```
 
 # References
