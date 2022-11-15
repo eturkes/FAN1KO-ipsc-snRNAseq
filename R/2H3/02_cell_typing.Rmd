@@ -469,6 +469,24 @@ table(seurat$tran_singleR)
 red_dim_plot(seurat, "umap1", "umap2", "tran_singleR", "cat")
 ```
 
+# Final Annotation
+
+```{r}
+seurat <- RenameIdents(
+  seurat,
+  "0" = "Mural", "1" = "MSN", "2" = "Astrocyte", "3" = "Astrocyte", "4" = "Astrocyte", "5" = "MSN", "6" = "MSN",
+  "7" = "MSN", "8" = "MSN", "9" = "Mural", "10" = "Astrocyte", "11" = "MSN", "12" = "Mural"
+)
+seurat$annotations <- seurat@active.ident
+
+red_dim_plot(seurat, "umap1", "umap2", "annotations", "cat")
+
+rds <- file.path(cache_dir, "annotated_seurat.rds")
+if (!file.exists(rds)) {
+  saveRDS(seurat, rds)
+}
+```
+
 # References
 
 This is the concluding section of the document. Here we output the `sessionInfo` and create a bibliography for works cited.
