@@ -482,6 +482,35 @@ table(seurat$tran_singleR)
 red_dim_plot(seurat, "umap1", "umap2", "tran_singleR", "cat")
 ```
 
+### NAc Only
+
+```{r}
+rds <- file.path(cache_dir, "tran_singleR_markers_NAc.rds")
+if (file.exists(rds)) {
+  singleR_markers <- readRDS(rds)
+} else {
+  singleR_markers <- getClassicMarkers(
+    list(ref[[4]]), list(ref[[4]]$broad_cellType), BPPARAM = MulticoreParam(detectCores())
+  )
+  saveRDS(singleR_markers, rds)
+}
+
+rds <- file.path(cache_dir, "tran_singleR_NAc.rds")
+if (file.exists(rds)) {
+  predictions <- readRDS(rds)
+} else {
+  predictions <- SingleR(
+    GetAssayData(seurat, assay = "RNA"), list(ref[[4]]), list(ref[[4]]$broad_cellType),
+    genes = list(singleR_markers), BPPARAM = MulticoreParam(detectCores())
+  )
+  saveRDS(predictions, rds)
+}
+
+seurat$tran_singleR <- factor(predictions$labels)
+table(seurat$tran_singleR)
+red_dim_plot(seurat, "umap1", "umap2", "tran_singleR", "cat")
+```
+
 # References
 
 This is the concluding section of the document. Here we output the `sessionInfo` and create a bibliography for works cited.
