@@ -1,0 +1,185 @@
+---
+title: '01 DEGs - `r unlist(strsplit(getwd(), "/"))[6]`'
+author:
+  - name: "Emir Turkes [emir.turkes@eturkes.com]"
+  - name: "UK Dementia Research Institute at UCL"
+date: '`r strftime(Sys.time(), "%B %d, %Y")`'
+link-citations: true
+output:
+  html_document:
+    code_folding: hide
+    number_sections: true
+    theme: lumen
+    highlight: haddock
+    toc: true
+    toc_depth: 3
+    toc_float:
+      collapsed: false
+      smooth_scroll: false
+knit: (function(inputFile, encoding) {
+  rmarkdown::render(inputFile, encoding = encoding, output_file = file.path(
+    "..", "..", "results", unlist(strsplit(getwd(), "/"))[6], "01_DEGs.html"
+  ))})
+---
+
+<style type="text/css">
+body {font-size: 16px;}
+h1.title {font-size: 35px;}
+h1 {font-size: 24px;}
+h2 {font-size: 22px;}
+h3 {font-size: 20px;}
+.toc-content {padding-left: 0px; padding-right: 0px;}
+div.tocify {width: 100%;}
+.tocify-subheader .tocify-item {font-size: 0.95em; padding-left: 25px; text-indent: 0;}
+.tocify-subheader .tocify-subheader .tocify-item {
+  font-size: 0.95em; padding-left: 35px; text-indent: 0;
+}
+div.main-container {max-width: none; width: 100%;}
+</style>
+
+*This file is a part of [FAN1 KO iPSC snRNAseq](https://github.com/eturkes/FAN1KO-ipsc-snRNAseq).*
+
+The data here will be referenced using the name ``r unlist(strsplit(getwd(), "/"))[6]``.
+
+```{r}
+#    This file is part of FAN1KO-ipsc-snRNAseq.
+#    Copyright (C) 2022  Emir Turkes, Emma Bunting, Jessica Olive,
+#    Jasmine Donaldson, Sarah Tabrizi, UK Dementia Research Institute at
+#    UCL
+#
+#    This program is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation, either version 3 of the License, or
+#    (at your option) any later version.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License
+#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+#    Emir Turkes can be contacted at emir.turkes@eturkes.com
+
+packages <- c("conflicted", "Seurat", "DT", "ggplot2")
+invisible(suppressPackageStartupMessages(lapply(packages, library, character.only = TRUE)))
+source(file.path("..", "utils.R"))
+
+analysis_no <- 1
+data_name <- unlist(strsplit(getwd(), "/"))[6] # Name of dataset.
+data_dir <- file.path("..", "..", "data") # Backed up data.
+results_dir <- file.path("..", "..", "results")
+
+# Unique cache directory for each analysis number.
+# ------------------------------------------------
+cache_dir <- file.path("..", "..", "cache", data_name, paste0("0", analysis_no))
+if (!dir.exists(cache_dir)) {
+  dir.create(cache_dir, recursive = TRUE)
+}
+# ------------------------------------------------
+
+knitr::opts_chunk$set(fig.width = 10, fig.height = 7, dpi = 150)
+```
+
+# Prep
+
+```{r}
+WT <- readRDS(file.path(cache_dir, "..", "..", "WT", "02", "annotated_seurat.rds"))
+WT$group <- "WT"
+MUT <- readRDS(file.path(cache_dir, "..", "..", "2H3", "02", "annotated_seurat.rds"))
+MUT$group <- "2H3"
+seurat <- merge(WT, MUT)
+rm(WT, MUT)
+
+seurat
+```
+
+# MSN DEGs
+
+```{r}
+rds <- file.path(cache_dir, "MSN_seurat.rds")
+if (file.exists(rds)) {
+  sub_seurat <- readRDS(rds)
+} else {
+  sub_seurat <- subset(seurat, idents = "MSN")
+  sub_seurat@active.ident <- factor(sub_seurat$group)
+  sub_seurat <- suppressWarnings(SCTransform(sub_seurat, vst.flavor = "v2", verbose = FALSE))
+  saveRDS(sub_seurat, rds)
+}
+
+rds <- file.path(cache_dir, "MSN_DEGs.rds")
+if (file.exists(rds)) {
+  DEGs <- readRDS(rds)
+} else {
+  DEGs <- FindAllMarkers(sub_seurat, verbose = FALSE)
+  saveRDS(DEGs, rds)
+}
+
+datatable_download_exp(DEGs)
+
+VlnPlot(sub_seurat, DEGs$gene[seq(12)])
+DoHeatmap(sub_seurat, DEGs$gene[seq(50)]) + scale_fill_gradientn(colors = c("blue", "white", "red"))
+```
+
+# Astrocyte DEGs
+
+```{r}
+rds <- file.path(cache_dir, "Astrocyte_seurat.rds")
+if (file.exists(rds)) {
+  sub_seurat <- readRDS(rds)
+} else {
+  sub_seurat <- subset(seurat, idents = "Astrocyte")
+  sub_seurat@active.ident <- factor(sub_seurat$group)
+  sub_seurat <- suppressWarnings(SCTransform(sub_seurat, vst.flavor = "v2", verbose = FALSE))
+  saveRDS(sub_seurat, rds)
+}
+
+rds <- file.path(cache_dir, "Astrocyte_DEGs.rds")
+if (file.exists(rds)) {
+  DEGs <- readRDS(rds)
+} else {
+  DEGs <- FindAllMarkers(sub_seurat, verbose = FALSE)
+  saveRDS(DEGs, rds)
+}
+
+datatable_download_exp(DEGs)
+
+VlnPlot(sub_seurat, DEGs$gene[seq(12)])
+DoHeatmap(sub_seurat, DEGs$gene[seq(50)]) + scale_fill_gradientn(colors = c("blue", "white", "red"))
+```
+
+# Mural DEGs
+
+```{r}
+rds <- file.path(cache_dir, "Mural_seurat.rds")
+if (file.exists(rds)) {
+  sub_seurat <- readRDS(rds)
+} else {
+  sub_seurat <- subset(seurat, idents = "Mural")
+  sub_seurat@active.ident <- factor(sub_seurat$group)
+  sub_seurat <- suppressWarnings(SCTransform(sub_seurat, vst.flavor = "v2", verbose = FALSE))
+  saveRDS(sub_seurat, rds)
+}
+
+rds <- file.path(cache_dir, "Mural_DEGs.rds")
+if (file.exists(rds)) {
+  DEGs <- readRDS(rds)
+} else {
+  DEGs <- FindAllMarkers(sub_seurat, verbose = FALSE)
+  saveRDS(DEGs, rds)
+}
+
+datatable_download_exp(DEGs)
+
+VlnPlot(sub_seurat, DEGs$gene[seq(12)])
+DoHeatmap(sub_seurat, DEGs$gene[seq(50)]) + scale_fill_gradientn(colors = c("blue", "white", "red"))
+```
+
+# References
+
+This is the concluding section of the document. Here we output the `sessionInfo` and create a bibliography for works cited.
+
+```{r}
+sessionInfo()
+```
