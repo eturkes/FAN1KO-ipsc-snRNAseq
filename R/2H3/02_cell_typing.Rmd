@@ -193,12 +193,28 @@ tran_markers <- as.list(tran_markers)
 remove <- unique(unlist(tran_markers))[unique(unlist(tran_markers)) %notin% VariableFeatures(seurat)]
 tran_markers_highvar <- lapply(tran_markers, function(x) x[!(x %in% remove)])
 
-for (i in seq_along(tran_markers_highvar)) {
-  if (any(tran_markers_highvar[[i]] %in% rownames(seurat))) {
+tran_markers_expanded <- read.delim(file.path(data_dir, "gene-sets", "tran_markers_expanded.tsv"))
+tran_markers_expanded <- as.list(tran_markers_expanded)
+
+tran_markers_aggregated <- tran_markers_expanded
+names(tran_markers_aggregated) <- gsub("(.+?)(\\_.*)", "\\1", names(tran_markers_expanded))
+tran_markers_aggregated <- tapply(
+  unlist(tran_markers_aggregated, use.names = FALSE),
+  rep(names(tran_markers_aggregated), lengths(tran_markers_aggregated)),
+  c
+)
+tran_markers_aggregated <- lapply(tran_markers_aggregated, function(x) x[!(x == "")])
+
+remove <-
+  unique(unlist(tran_markers_aggregated))[unique(unlist(tran_markers_aggregated)) %notin% VariableFeatures(seurat)]
+tran_markers_aggregated_highvar <- lapply(tran_markers_aggregated, function(x) x[!(x %in% remove)])
+
+for (i in seq_along(tran_markers_aggregated_highvar)) {
+  if (any(tran_markers_aggregated_highvar[[i]] %in% rownames(seurat))) {
     print( # Only plot first four genes.
-      FeaturePlot(seurat, tran_markers_highvar[[i]][1:4], order = TRUE, cols = c("lightgrey", "red")) +
+      FeaturePlot(seurat, tran_markers_aggregated_highvar[[i]][1:4], order = TRUE, cols = c("lightgrey", "red")) +
         plot_annotation(
-          names(tran_markers_highvar)[i],
+          names(tran_markers_aggregated_highvar)[i],
           theme = theme(plot.title = element_text(hjust = 0.5, size = 18, face = "bold"))
         )
     )
@@ -295,18 +311,6 @@ DefaultAssay(seurat) <- "SCT"
 ## Tran
 
 ```{r}
-tran_markers_expanded <- read.delim(file.path(data_dir, "gene-sets", "tran_markers_expanded.tsv"))
-tran_markers_expanded <- as.list(tran_markers_expanded)
-
-tran_markers_aggregated <- tran_markers_expanded
-names(tran_markers_aggregated) <- gsub("(.+?)(\\_.*)", "\\1", names(tran_markers_expanded))
-tran_markers_aggregated <- tapply(
-  unlist(tran_markers_aggregated, use.names = FALSE),
-  rep(names(tran_markers_aggregated), lengths(tran_markers_aggregated)),
-  c
-)
-tran_markers_aggregated <- lapply(tran_markers_aggregated, function(x) x[!(x == "")])
-
 rds <- file.path(cache_dir, "tran_gsva_aggregated.rds")
 if (file.exists(rds)) {
   gsva <- readRDS(rds)
