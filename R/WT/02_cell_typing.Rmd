@@ -444,45 +444,6 @@ table(seurat$tran_singleR_broad)
 red_dim_plot(seurat, "umap1", "umap2", "tran_singleR_broad", "cat")
 ```
 
-### Broad Cell-types
-
-```{r}
-rds <- file.path(cache_dir, "tran_singleR_markers_broad.rds")
-if (file.exists(rds)) {
-  singleR_markers <- readRDS(rds)
-} else {
-  singleR_markers <- getClassicMarkers(
-    ref,
-    list(
-      ref[[1]]$broad_cellType, ref[[2]]$broad_cellType, ref[[3]]$broad_cellType,
-      ref[[4]]$broad_cellType, ref[[5]]$broad_cellType
-    ),
-    BPPARAM = MulticoreParam(detectCores())
-  )
-  saveRDS(singleR_markers, rds)
-}
-
-rds <- file.path(cache_dir, "tran_singleR_broad.rds")
-if (file.exists(rds)) {
-  predictions <- readRDS(rds)
-} else {
-  predictions <- SingleR(
-    GetAssayData(seurat, assay = "RNA"),
-    ref,
-    list(
-      ref[[1]]$broad_cellType, ref[[2]]$broad_cellType, ref[[3]]$broad_cellType,
-      ref[[4]]$broad_cellType, ref[[5]]$broad_cellType
-    ),
-    genes = list(singleR_markers, singleR_markers, singleR_markers, singleR_markers, singleR_markers)
-  )
-  saveRDS(predictions, rds)
-}
-
-seurat$tran_singleR <- factor(predictions$labels)
-table(seurat$tran_singleR)
-red_dim_plot(seurat, "umap1", "umap2", "tran_singleR", "cat")
-```
-
 ### NAc Only
 
 ```{r}
