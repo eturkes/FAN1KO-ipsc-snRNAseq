@@ -244,7 +244,7 @@ sub_name <- "all"
 seurat <- as.Seurat(sce, data = NULL)
 rm(sce)
 seurat <- RenameAssays(seurat, originalexp = "RNA")
-seurat <- cluster_pipeline(seurat, cache_dir, sub_name, protocol, vars_to_regress, parallel_override, resolution = 0.8)
+seurat <- cluster_pipeline(seurat, cache_dir, sub_name, protocol, vars_to_regress, parallel_override, resolution = 0.5)
 seurat
 
 for (i in 1:length(metadata_to_plot)) {

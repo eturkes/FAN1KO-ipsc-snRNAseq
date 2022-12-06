@@ -86,9 +86,7 @@ knitr::opts_chunk$set(fig.width = 10, fig.height = 7, dpi = 150)
 
 ```{r}
 WT <- readRDS(file.path(cache_dir, "..", "..", "WT", "02", "annotated_seurat.rds"))
-WT$group <- "WT"
 MUT <- readRDS(file.path(cache_dir, "..", "..", "2H3", "02", "annotated_seurat.rds"))
-MUT$group <- "2H3"
 seurat <- merge(WT, MUT)
 rm(WT, MUT)
 
@@ -122,6 +120,33 @@ VlnPlot(sub_seurat, DEGs$gene[seq(12)])
 DoHeatmap(sub_seurat, DEGs$gene[seq(50)]) + scale_fill_gradientn(colors = c("blue", "white", "red"))
 ```
 
+# Inhibitory Neuron DEGs
+
+```{r}
+rds <- file.path(cache_dir, "Inhibitory_Neuron_seurat.rds")
+if (file.exists(rds)) {
+  sub_seurat <- readRDS(rds)
+} else {
+  sub_seurat <- subset(seurat, idents = "Inhibitory Neuron")
+  sub_seurat@active.ident <- factor(sub_seurat$group)
+  sub_seurat <- suppressWarnings(SCTransform(sub_seurat, vst.flavor = "v2", verbose = FALSE))
+  saveRDS(sub_seurat, rds)
+}
+
+rds <- file.path(cache_dir, "Inhibitory_Neuron_DEGs.rds")
+if (file.exists(rds)) {
+  DEGs <- readRDS(rds)
+} else {
+  DEGs <- FindAllMarkers(sub_seurat, verbose = FALSE)
+  saveRDS(DEGs, rds)
+}
+
+datatable_download_exp(DEGs)
+
+VlnPlot(sub_seurat, DEGs$gene[seq(12)])
+DoHeatmap(sub_seurat, DEGs$gene[seq(50)]) + scale_fill_gradientn(colors = c("blue", "white", "red"))
+```
+
 # Astrocyte DEGs
 
 ```{r}
@@ -136,6 +161,33 @@ if (file.exists(rds)) {
 }
 
 rds <- file.path(cache_dir, "Astrocyte_DEGs.rds")
+if (file.exists(rds)) {
+  DEGs <- readRDS(rds)
+} else {
+  DEGs <- FindAllMarkers(sub_seurat, verbose = FALSE)
+  saveRDS(DEGs, rds)
+}
+
+datatable_download_exp(DEGs)
+
+VlnPlot(sub_seurat, DEGs$gene[seq(12)])
+DoHeatmap(sub_seurat, DEGs$gene[seq(50)]) + scale_fill_gradientn(colors = c("blue", "white", "red"))
+```
+
+# OPC DEGs
+
+```{r}
+rds <- file.path(cache_dir, "OPC_seurat.rds")
+if (file.exists(rds)) {
+  sub_seurat <- readRDS(rds)
+} else {
+  sub_seurat <- subset(seurat, idents = "OPC")
+  sub_seurat@active.ident <- factor(sub_seurat$group)
+  sub_seurat <- suppressWarnings(SCTransform(sub_seurat, vst.flavor = "v2", verbose = FALSE))
+  saveRDS(sub_seurat, rds)
+}
+
+rds <- file.path(cache_dir, "OPC_DEGs.rds")
 if (file.exists(rds)) {
   DEGs <- readRDS(rds)
 } else {
