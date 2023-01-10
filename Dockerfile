@@ -18,7 +18,7 @@
 #
 #    Emir Turkes can be contacted at emir.turkes@eturkes.com
 
-FROM rocker/rstudio:4.2.1
+FROM rocker/rstudio:4.2.2
 
 LABEL maintainer="Emir Turkes emir.turkes@eturkes.com"
 
@@ -52,6 +52,8 @@ RUN apt-get update \
         -e "BiocManager::install('glmGamPoi')" \
         -e "BiocManager::install('GSVA')" \
         -e "BiocManager::install('SingleR')" \
+        -e "BiocManager::install('clusterProfiler')" \
+        -e "BiocManager::install('org.Hs.eg.db')" \
     && apt-get clean \
     && rm -Rf \
         /var/lib/apt/lists/ \

@@ -62,7 +62,7 @@ The data here will be referenced using the name ``r unlist(strsplit(getwd(), "/"
 #
 #    Emir Turkes can be contacted at emir.turkes@eturkes.com
 
-packages <- c("conflicted", "Seurat", "DT", "ggplot2")
+packages <- c("conflicted", "Seurat", "DT", "ggplot2", "clusterProfiler", "org.Hs.eg.db")
 invisible(suppressPackageStartupMessages(lapply(packages, library, character.only = TRUE)))
 source(file.path("..", "utils.R"))
 
@@ -114,10 +114,19 @@ if (file.exists(rds)) {
   saveRDS(DEGs, rds)
 }
 
+DEGs <- DEGs[DEGs$cluster == "2H3", ]
 datatable_download_exp(DEGs)
 
 VlnPlot(sub_seurat, DEGs$gene[seq(12)])
 DoHeatmap(sub_seurat, DEGs$gene[seq(50)]) + scale_fill_gradientn(colors = c("blue", "white", "red"))
+
+DEGs_sub <- DEGs[DEGs$avg_log2FC > 0, ]
+gse <- enrichGO(DEGs_sub$gene, org.Hs.eg.db, "SYMBOL", "BP", universe = rownames(sub_seurat))
+barplot(gse, showCategory = 10) + ggtitle("Upregulated in 2H3")
+
+DEGs_sub <- DEGs[DEGs$avg_log2FC < 0, ]
+gse <- enrichGO(DEGs_sub$gene, org.Hs.eg.db, "SYMBOL", "BP", universe = rownames(sub_seurat))
+barplot(gse, showCategory = 10) + ggtitle("Downregulated in 2H3")
 ```
 
 # Inhibitory Neuron DEGs
@@ -141,10 +150,19 @@ if (file.exists(rds)) {
   saveRDS(DEGs, rds)
 }
 
+DEGs <- DEGs[DEGs$cluster == "2H3", ]
 datatable_download_exp(DEGs)
 
 VlnPlot(sub_seurat, DEGs$gene[seq(12)])
 DoHeatmap(sub_seurat, DEGs$gene[seq(50)]) + scale_fill_gradientn(colors = c("blue", "white", "red"))
+
+DEGs_sub <- DEGs[DEGs$avg_log2FC > 0, ]
+gse <- enrichGO(DEGs_sub$gene, org.Hs.eg.db, "SYMBOL", "BP", universe = rownames(sub_seurat))
+barplot(gse, showCategory = 10) + ggtitle("Upregulated in 2H3")
+
+DEGs_sub <- DEGs[DEGs$avg_log2FC < 0, ]
+gse <- enrichGO(DEGs_sub$gene, org.Hs.eg.db, "SYMBOL", "BP", universe = rownames(sub_seurat))
+barplot(gse, showCategory = 10) + ggtitle("Downregulated in 2H3")
 ```
 
 # Astrocyte DEGs
@@ -168,10 +186,19 @@ if (file.exists(rds)) {
   saveRDS(DEGs, rds)
 }
 
+DEGs <- DEGs[DEGs$cluster == "2H3", ]
 datatable_download_exp(DEGs)
 
 VlnPlot(sub_seurat, DEGs$gene[seq(12)])
 DoHeatmap(sub_seurat, DEGs$gene[seq(50)]) + scale_fill_gradientn(colors = c("blue", "white", "red"))
+
+DEGs_sub <- DEGs[DEGs$avg_log2FC > 0, ]
+gse <- enrichGO(DEGs_sub$gene, org.Hs.eg.db, "SYMBOL", "BP", universe = rownames(sub_seurat))
+barplot(gse, showCategory = 10) + ggtitle("Upregulated in 2H3")
+
+DEGs_sub <- DEGs[DEGs$avg_log2FC < 0, ]
+gse <- enrichGO(DEGs_sub$gene, org.Hs.eg.db, "SYMBOL", "BP", universe = rownames(sub_seurat))
+barplot(gse, showCategory = 10) + ggtitle("Downregulated in 2H3")
 ```
 
 # OPC DEGs
@@ -195,10 +222,19 @@ if (file.exists(rds)) {
   saveRDS(DEGs, rds)
 }
 
+DEGs <- DEGs[DEGs$cluster == "2H3", ]
 datatable_download_exp(DEGs)
 
 VlnPlot(sub_seurat, DEGs$gene[seq(12)])
 DoHeatmap(sub_seurat, DEGs$gene[seq(50)]) + scale_fill_gradientn(colors = c("blue", "white", "red"))
+
+DEGs_sub <- DEGs[DEGs$avg_log2FC > 0, ]
+gse <- enrichGO(DEGs_sub$gene, org.Hs.eg.db, "SYMBOL", "BP", universe = rownames(sub_seurat))
+barplot(gse, showCategory = 10) + ggtitle("Upregulated in 2H3")
+
+DEGs_sub <- DEGs[DEGs$avg_log2FC < 0, ]
+gse <- enrichGO(DEGs_sub$gene, org.Hs.eg.db, "SYMBOL", "BP", universe = rownames(sub_seurat))
+barplot(gse, showCategory = 10) + ggtitle("Downregulated in 2H3")
 ```
 
 # Mural DEGs
@@ -222,10 +258,19 @@ if (file.exists(rds)) {
   saveRDS(DEGs, rds)
 }
 
+DEGs <- DEGs[DEGs$cluster == "2H3", ]
 datatable_download_exp(DEGs)
 
 VlnPlot(sub_seurat, DEGs$gene[seq(12)])
 DoHeatmap(sub_seurat, DEGs$gene[seq(50)]) + scale_fill_gradientn(colors = c("blue", "white", "red"))
+
+DEGs_sub <- DEGs[DEGs$avg_log2FC > 0, ]
+gse <- enrichGO(DEGs_sub$gene, org.Hs.eg.db, "SYMBOL", "BP", universe = rownames(sub_seurat))
+barplot(gse, showCategory = 10) + ggtitle("Upregulated in 2H3")
+
+DEGs_sub <- DEGs[DEGs$avg_log2FC < 0, ]
+gse <- enrichGO(DEGs_sub$gene, org.Hs.eg.db, "SYMBOL", "BP", universe = rownames(sub_seurat))
+barplot(gse, showCategory = 10) + ggtitle("Downregulated in 2H3")
 ```
 
 # References
