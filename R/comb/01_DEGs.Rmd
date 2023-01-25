@@ -122,10 +122,12 @@ DoHeatmap(sub_seurat, DEGs$gene[seq(50)]) + scale_fill_gradientn(colors = c("blu
 
 DEGs_sub <- DEGs[DEGs$avg_log2FC > 0, ]
 gse <- enrichGO(DEGs_sub$gene, org.Hs.eg.db, "SYMBOL", "BP", universe = rownames(sub_seurat))
+datatable_download_exp(gse@result[gse@result$p.adjust < 0.05, ])
 barplot(gse, showCategory = 10) + ggtitle("Upregulated in 2H3")
 
 DEGs_sub <- DEGs[DEGs$avg_log2FC < 0, ]
 gse <- enrichGO(DEGs_sub$gene, org.Hs.eg.db, "SYMBOL", "BP", universe = rownames(sub_seurat))
+datatable_download_exp(gse@result[gse@result$p.adjust < 0.05, ])
 barplot(gse, showCategory = 10) + ggtitle("Downregulated in 2H3")
 ```
 
@@ -158,10 +160,12 @@ DoHeatmap(sub_seurat, DEGs$gene[seq(50)]) + scale_fill_gradientn(colors = c("blu
 
 DEGs_sub <- DEGs[DEGs$avg_log2FC > 0, ]
 gse <- enrichGO(DEGs_sub$gene, org.Hs.eg.db, "SYMBOL", "BP", universe = rownames(sub_seurat))
+datatable_download_exp(gse@result[gse@result$p.adjust < 0.05, ])
 barplot(gse, showCategory = 10) + ggtitle("Upregulated in 2H3")
 
 DEGs_sub <- DEGs[DEGs$avg_log2FC < 0, ]
 gse <- enrichGO(DEGs_sub$gene, org.Hs.eg.db, "SYMBOL", "BP", universe = rownames(sub_seurat))
+datatable_download_exp(gse@result[gse@result$p.adjust < 0.05, ])
 barplot(gse, showCategory = 10) + ggtitle("Downregulated in 2H3")
 ```
 
@@ -194,10 +198,12 @@ DoHeatmap(sub_seurat, DEGs$gene[seq(50)]) + scale_fill_gradientn(colors = c("blu
 
 DEGs_sub <- DEGs[DEGs$avg_log2FC > 0, ]
 gse <- enrichGO(DEGs_sub$gene, org.Hs.eg.db, "SYMBOL", "BP", universe = rownames(sub_seurat))
+datatable_download_exp(gse@result[gse@result$p.adjust < 0.05, ])
 barplot(gse, showCategory = 10) + ggtitle("Upregulated in 2H3")
 
 DEGs_sub <- DEGs[DEGs$avg_log2FC < 0, ]
 gse <- enrichGO(DEGs_sub$gene, org.Hs.eg.db, "SYMBOL", "BP", universe = rownames(sub_seurat))
+datatable_download_exp(gse@result[gse@result$p.adjust < 0.05, ])
 barplot(gse, showCategory = 10) + ggtitle("Downregulated in 2H3")
 ```
 
@@ -230,10 +236,12 @@ DoHeatmap(sub_seurat, DEGs$gene[seq(50)]) + scale_fill_gradientn(colors = c("blu
 
 DEGs_sub <- DEGs[DEGs$avg_log2FC > 0, ]
 gse <- enrichGO(DEGs_sub$gene, org.Hs.eg.db, "SYMBOL", "BP", universe = rownames(sub_seurat))
+datatable_download_exp(gse@result[gse@result$p.adjust < 0.05, ])
 barplot(gse, showCategory = 10) + ggtitle("Upregulated in 2H3")
 
 DEGs_sub <- DEGs[DEGs$avg_log2FC < 0, ]
 gse <- enrichGO(DEGs_sub$gene, org.Hs.eg.db, "SYMBOL", "BP", universe = rownames(sub_seurat))
+datatable_download_exp(gse@result[gse@result$p.adjust < 0.05, ])
 barplot(gse, showCategory = 10) + ggtitle("Downregulated in 2H3")
 ```
 
@@ -266,10 +274,12 @@ DoHeatmap(sub_seurat, DEGs$gene[seq(50)]) + scale_fill_gradientn(colors = c("blu
 
 DEGs_sub <- DEGs[DEGs$avg_log2FC > 0, ]
 gse <- enrichGO(DEGs_sub$gene, org.Hs.eg.db, "SYMBOL", "BP", universe = rownames(sub_seurat))
+datatable_download_exp(gse@result[gse@result$p.adjust < 0.05, ])
 barplot(gse, showCategory = 10) + ggtitle("Upregulated in 2H3")
 
 DEGs_sub <- DEGs[DEGs$avg_log2FC < 0, ]
 gse <- enrichGO(DEGs_sub$gene, org.Hs.eg.db, "SYMBOL", "BP", universe = rownames(sub_seurat))
+datatable_download_exp(gse@result[gse@result$p.adjust < 0.05, ])
 barplot(gse, showCategory = 10) + ggtitle("Downregulated in 2H3")
 ```
 
