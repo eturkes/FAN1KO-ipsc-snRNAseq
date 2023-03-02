@@ -150,6 +150,45 @@ gene_plot(subset_list, subset_names, trimws(genes$Proliferative[nzchar(genes$Pro
 gene_plot(subset_list, subset_names, trimws(genes$Housekeeping[nzchar(genes$Housekeeping)]))
 ```
 
+## NPC
+
+```{r, fig.width = 15, fig.height = 14}
+gene_plot(subset_list, subset_names, trimws(genes$NPC[nzchar(genes$NPC)]))
+```
+
+## Mural
+
+```{r, fig.width = 15, fig.height = 14}
+gene_plot(subset_list, subset_names, trimws(genes$Mural[nzchar(genes$Mural)]))
+```
+
+## LGE Progenitors
+
+```{r, fig.width = 15, fig.height = 14}
+gene_plot(subset_list, subset_names, trimws(genes$LGE_Progenitors[nzchar(genes$LGE_Progenitors)]))
+```
+
+## Immature Neurons
+
+```{r, fig.width = 15, fig.height = 14}
+gene_plot(subset_list, subset_names, trimws(genes$Immature_Neurons[nzchar(genes$Immature_Neurons)]))
+```
+
+## Mature Neurons
+
+```{r, fig.width = 15, fig.height = 14}
+gene_plot(subset_list, subset_names, trimws(genes$Mature_Neurons[nzchar(genes$Mature_Neurons)]))
+```
+
+## Striatal Projection Neurons
+
+```{r, fig.width = 15, fig.height = 14}
+gene_plot(
+  subset_list, subset_names,
+  trimws(genes$Striatal_Projection_Neurons[nzchar(genes$Striatal_Projection_Neurons)])
+)
+```
+
 # Individual Marker Genes
 
 ## Smith-Geater
